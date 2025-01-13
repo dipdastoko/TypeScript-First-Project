@@ -2,8 +2,6 @@ import app from './app';
 import config from './app/config';
 import mongoose from 'mongoose';
 
-console.log(config.database_url);
-
 async function main() {
   try {
     await mongoose.connect(config.database_url as string);

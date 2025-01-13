@@ -3,9 +3,9 @@ import { StudentServices } from './student.service';
 
 const createStudent = async (req: Request, res: Response) => {
   try {
-    const student = req.body;
+    const { student: studentData } = req.body;
 
-    const result = await StudentServices.createStudentIntoDB(student);
+    const result = await StudentServices.createStudentIntoDB(studentData);
 
     res.status(200).json({
       sucess: true,
