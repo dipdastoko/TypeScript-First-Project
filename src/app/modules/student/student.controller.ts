@@ -1,25 +1,40 @@
 import { Request, Response } from 'express';
 import { StudentServices } from './student.service';
-import studentValidationSchema from './student.validation';
+import studentValidationSchema from './student.zod.validation';
+// import studentValidationSchema from './student.validation';
 
 const createStudent = async (req: Request, res: Response) => {
   try {
     // Joi schema for Guardian
-    // creating a schema validation using joi
+    // creating a schema validation using Zod
+
+    // const studentValidationSchema = z.object({
+    //   id: z.string(),
+    //   name: {
+    //     firstName: z.string().max(20, {
+    //       message: 'First name can not be more than 20 characters',
+    //     }),
+    //   },
+    // });
 
     const { student: studentData } = req.body;
-    const { error, value } = studentValidationSchema.validate(studentData);
 
-    const result = await StudentServices.createStudentIntoDB(studentData);
+    // data validation using Joi
+    // const { error, value } = studentValidationSchema.validate(studentData);
 
-    console.log(value);
-    if (error) {
-      res.status(500).json({
-        success: false,
-        message: 'something went wrong',
-        error: error.details,
-      });
-    }
+    // data validation using zod
+    const zodParsedData = studentValidationSchema.parse(studentData);
+
+    const result = await StudentServices.createStudentIntoDB(zodParsedData);
+
+    // console.log(result);
+    // if (error) {
+    //   res.status(500).json({
+    //     success: false,
+    //     message: 'something went wrong',
+    //     error: error.details,
+    //   });
+    // }
 
     res.status(200).json({
       sucess: true,
