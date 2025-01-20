@@ -223,7 +223,8 @@ studentSchema.post('save', function (doc, next) {
 
 // Query Middlewarest
 studentSchema.pre('find', function (next) {
-  console.log(this);
+  this.find({ isDeleted: { $ne: true } });
+  next();
 });
 // creating a custom instance method
 // studentSchema.methods.isUserExists = async function (id: string) {
