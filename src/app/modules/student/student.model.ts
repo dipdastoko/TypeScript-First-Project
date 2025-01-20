@@ -107,98 +107,110 @@ const localGuardianSchema = new Schema<TLocalGuardian>({
   },
 });
 
-const studentSchema = new Schema<TStudent, IStudentModel>({
-  id: {
-    type: String,
-    required: [true, 'Student ID is required. Please insert student ID'],
-    unique: true,
-  },
-  password: {
-    type: String,
-    required: [true, 'Password is required. Please insert password.'],
-  },
-  name: {
-    type: userNameSchema,
-    required: [
-      true,
-      "Student's name is required. Please insert student's name",
-    ],
-  },
-  gender: {
-    type: String,
-    enum: {
-      values: ['male', 'female', 'other'],
-      message:
-        "{VALUE} is not valid. The gender can only be one of the following: 'male','female' or 'other'",
+const studentSchema = new Schema<TStudent, IStudentModel>(
+  {
+    id: {
+      type: String,
+      required: [true, 'Student ID is required. Please insert student ID'],
+      unique: true,
     },
-    required: [true, 'Gender is required. Please insert gender'],
-  },
-  dateOfBirth: String,
-  email: {
-    type: String,
-    required: [true, 'Email is required. Please insert email'],
-    unique: true,
-    validate: {
-      validator: (value) => isEmail(value),
-      message: 'Email is not valid',
+    password: {
+      type: String,
+      required: [true, 'Password is required. Please insert password.'],
+    },
+    name: {
+      type: userNameSchema,
+      required: [
+        true,
+        "Student's name is required. Please insert student's name",
+      ],
+    },
+    gender: {
+      type: String,
+      enum: {
+        values: ['male', 'female', 'other'],
+        message:
+          "{VALUE} is not valid. The gender can only be one of the following: 'male','female' or 'other'",
+      },
+      required: [true, 'Gender is required. Please insert gender'],
+    },
+    dateOfBirth: String,
+    email: {
+      type: String,
+      required: [true, 'Email is required. Please insert email'],
+      unique: true,
+      validate: {
+        validator: (value) => isEmail(value),
+        message: 'Email is not valid',
+      },
+    },
+    contactNo: {
+      type: String,
+      required: [
+        true,
+        'Contact number is required. Please insert contact number',
+      ],
+    },
+    emergencyContactNo: {
+      type: String,
+      required: [
+        true,
+        'Emergency contact number is required. Please insert emergency contact number',
+      ],
+    },
+    bloodGroup: {
+      type: String,
+      enum: ['A+', 'A-', 'AB+', 'AB-', 'B+', 'B-', 'O+', 'O-'],
+    },
+    presentAddress: {
+      type: String,
+      required: [
+        true,
+        'Present address is required. Please insert present address',
+      ],
+    },
+    permanentAddress: {
+      type: String,
+      required: [
+        true,
+        'Permanent address is required. Please insert permanent address',
+      ],
+    },
+    guardian: {
+      type: guardianSchema,
+      required: [
+        true,
+        'Guardian information is required. Please insert guardian details',
+      ],
+    },
+    localGuardian: {
+      type: localGuardianSchema,
+      required: [
+        true,
+        'Local guardian information is required. Please insert local guardian details',
+      ],
+    },
+    profileImg: String,
+    isActive: {
+      type: String,
+      enum: ['active', 'inactive'],
+      default: 'active',
+    },
+    isDeleted: {
+      type: Boolean,
+      default: false,
     },
   },
-  contactNo: {
-    type: String,
-    required: [
-      true,
-      'Contact number is required. Please insert contact number',
-    ],
+  {
+    toJSON: {
+      virtuals: true,
+    },
   },
-  emergencyContactNo: {
-    type: String,
-    required: [
-      true,
-      'Emergency contact number is required. Please insert emergency contact number',
-    ],
-  },
-  bloodGroup: {
-    type: String,
-    enum: ['A+', 'A-', 'AB+', 'AB-', 'B+', 'B-', 'O+', 'O-'],
-  },
-  presentAddress: {
-    type: String,
-    required: [
-      true,
-      'Present address is required. Please insert present address',
-    ],
-  },
-  permanentAddress: {
-    type: String,
-    required: [
-      true,
-      'Permanent address is required. Please insert permanent address',
-    ],
-  },
-  guardian: {
-    type: guardianSchema,
-    required: [
-      true,
-      'Guardian information is required. Please insert guardian details',
-    ],
-  },
-  localGuardian: {
-    type: localGuardianSchema,
-    required: [
-      true,
-      'Local guardian information is required. Please insert local guardian details',
-    ],
-  },
-  profileImg: String,
-  isActive: {
-    type: String,
-    enum: ['active', 'inactive'],
-    default: 'active',
-  },
-  isDeleted: {
-    type: Boolean,
-    default: false,
-  },
+);
+
+// virtual
+studentSchema.virtual('fullName').get(function () {
+  return this.name.firstName + ' ' + this.name.lastName;
 });
 
 // pre save middleware
@@ -224,6 +236,16 @@ studentSchema.post('save', function (doc, next) {
 // Query Middlewarest
 studentSchema.pre('find', function (next) {
   this.find({ isDeleted: { $ne: true } });
+  next();
+});
+studentSchema.pre('findOne', function (next) {
+  this.findOne({ isDeleted: { $ne: true } });
+  next();
+});
+studentSchema.pre('aggregate', function (next) {
+  // this.findOne({ isDeleted: { $ne: true } });
+  // console.log(this.pipeline());
+  this.pipeline().unshift({ $match: { isDeleted: { $ne: true } } });
   next();
 });
 // creating a custom instance method
